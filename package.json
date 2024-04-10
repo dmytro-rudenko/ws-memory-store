@@ -1,7 +1,7 @@
 {
   "name": "ws-memory-store",
   "description": "Memory store for based on WebSockets",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "index.js",
   "bin": {
     "ws-memory-store": "./index.js"
@@ -29,7 +29,6 @@
     "memory-store",
     "key value store"
   ],
-
   "author": "https://github.com/dmytro-rudenko",
   "repository": {
     "type": "git",
