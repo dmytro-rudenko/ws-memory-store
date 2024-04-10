@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WsMemoryStore = void 0;
 const socket_io_client_1 = require("socket.io-client");
-class WsMemoryStore {
+class WsMemoryStoreClient {
     constructor() {
         this.lastResponses = {};
     }
@@ -33,6 +34,12 @@ class WsMemoryStore {
         });
         return await this.waitForResponse(key);
     }
+    async delete(key) {
+        this.socket.emit("delete", {
+            key
+        });
+        return key;
+    }
     async waitForResponse(key) {
         return new Promise((resolve) => {
             setInterval(() => {
@@ -44,9 +51,6 @@ class WsMemoryStore {
         });
     }
     listeners() {
-        this.socket.on("set", (key) => {
-            // console.log("listener set", key);
-        });
         this.socket.on("get", ({ key, data }) => {
             // console.log("listener get", key, data);
             this.lastResponses[key] = data;
@@ -55,5 +59,11 @@ class WsMemoryStore {
             console.log("disconnected");
         });
     }
+    static getInstance() {
+        if (!this.instance) {
+            this.instance = new WsMemoryStoreClient();
+        }
+        return this.instance;
+    }
 }
-exports.default = new WsMemoryStore();
+exports.WsMemoryStore = WsMemoryStoreClient.getInstance();

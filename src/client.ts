@@ -1,12 +1,13 @@
 import { io } from "socket.io-client";
 
-class WsMemoryStore {
+class WsMemoryStoreClient {
     socket: any
     lastResponses: {
         [key: string]: string 
     } = {}
+    static instance: WsMemoryStoreClient;
 
-    async connect({
+    public async connect({
         host = 'localhost',
         port = 22922,
         http2 = false
@@ -34,7 +35,7 @@ class WsMemoryStore {
         this.socket.disconnect();
     }
 
-    async set(key: string, data: string) {
+    public async set(key: string, data: string) {
         this.socket.emit("set", {
             key,
             data
@@ -43,7 +44,7 @@ class WsMemoryStore {
         return key
      }
 
-    async get(key: string) {
+    public async get(key: string) {
         this.socket.emit("get", {
             key
         });
@@ -51,7 +52,15 @@ class WsMemoryStore {
         return await this.waitForResponse(key)
     }
 
-    async waitForResponse(key: string) {
+    public async delete (key: string) {
+        this.socket.emit("delete", {
+            key
+        });
+
+        return key
+    }
+
+    private async waitForResponse(key: string) {
         return new Promise((resolve) => {
             setInterval(() => {
                 if (this.lastResponses[key]) {
@@ -62,11 +71,7 @@ class WsMemoryStore {
         })
     }
 
-    listeners() {
-        this.socket.on("set", (key: string) => {
-            // console.log("listener set", key);
-        })
-
+    private listeners() {
         this.socket.on("get", ({ key, data }: { key: string, data: string }) => {
             // console.log("listener get", key, data);
             this.lastResponses[key] = data
@@ -76,7 +81,13 @@ class WsMemoryStore {
             console.log("disconnected");
         })
     }
+
+    static getInstance() {
+        if (!this.instance) {
+            this.instance = new WsMemoryStoreClient();
+        }
+        return this.instance
+    }
 }
 
-
-export default new WsMemoryStore()
+export const WsMemoryStore = WsMemoryStoreClient.getInstance()

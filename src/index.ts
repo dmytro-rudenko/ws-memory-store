@@ -1,37 +1,72 @@
 #!/usr/bin/env node
 
 import { Server } from "socket.io";
+import commandLineArgs from "command-line-args";
 
-const io = new Server({ /* options */ });
+const optionDefinitions = [
+    {
+        name: "port",
+        alias: "p",
+        type: Number
+    },
+    {
+        name: 'command',
+        defaultOption: true,
+    }
+]
 
-const memory: { [key: string]: string } = {};
+const options = commandLineArgs(optionDefinitions, { stopAtFirstUnknown: true });
 
-io.on("connection", (socket) => {
-    console.log("socket connected", socket.id);
+if (options.command === 'serve') {
+    const io = new Server({ /* options */ });
+    const memory: { [key: string]: string } = {};
 
-    // save message handler
-    socket.on("set", ({
-        key,
-        data
-    }: {
-        key: string,
-        data: string
-    }) => {
-        memory[key] = data;
-
-        io.emit("set", key);
-    })
-
-    // get message handler
-
-    socket.on("get", ({ key }: { key: string }) => {
-        const data = memory[key];
-
-        io.emit("get", {
+    io.on("connection", (socket) => {
+        // save message handler
+        socket.on("set", ({
             key,
             data
-        });
-    })
-});
+        }: {
+            key: string,
+            data: string
+        }) => {
+            memory[key] = data;
+        })
 
-io.listen(22922);
+        // get message handler
+        socket.on("get", ({ key }: { key: string }) => {
+            const data = memory[key];
+
+            io.emit("get", {
+                key,
+                data
+            });
+        })
+
+        // delete message handler
+        socket.on("delete", ({ key }: { key: string }) => {
+            delete memory[key];
+        })
+    });
+
+    io.listen(options.port || 22922);
+
+    console.log(`WS Memory Store started and listening on port ${options.port || 22922}`)
+}
+
+if (options.command === 'help') {
+    console.log(`
+    Ws Memory Store - Key Value Store based on WebSockets
+
+    Usage:
+        Commands:
+            - command [serve] - Starts the websocket memory store server.
+            - help            - Displays this help message.
+        Flags:
+            - port [number]   - Specifies the port to listen on. Default is 22922.
+
+        Example:
+            $ ws-memory-store serve -p 22922
+    `);
+    process.exit(0);
+}

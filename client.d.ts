@@ -1,8 +1,9 @@
-declare class WsMemoryStore {
+declare class WsMemoryStoreClient {
     socket: any;
     lastResponses: {
         [key: string]: string;
     };
+    static instance: WsMemoryStoreClient;
     connect({ host, port, http2 }?: {
         host?: string;
         port?: number;
@@ -11,8 +12,10 @@ declare class WsMemoryStore {
     disconnect(): void;
     set(key: string, data: string): Promise<string>;
     get(key: string): Promise<unknown>;
-    waitForResponse(key: string): Promise<unknown>;
-    listeners(): void;
+    delete(key: string): Promise<string>;
+    private waitForResponse;
+    private listeners;
+    static getInstance(): WsMemoryStoreClient;
 }
-declare const _default: WsMemoryStore;
-export default _default;
+export declare const WsMemoryStore: WsMemoryStoreClient;
+export {};

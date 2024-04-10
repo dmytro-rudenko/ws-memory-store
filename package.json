@@ -1,5 +1,6 @@
 {
   "name": "ws-memory-store",
+  "description": "Memory store for based on WebSockets",
   "version": "0.0.2",
   "main": "index.js",
   "bin": {
@@ -12,11 +13,20 @@
     "dev": "ts-node src/index.ts"
   },
   "devDependencies": {
-    "express": "^4.19.2",
+    "@types/command-line-args": "^5.2.3",
     "typescript": "^5.4.4"
   },
   "dependencies": {
+    "command-line-args": "^5.2.1",
     "socket.io-client": "^4.7.5"
   },
-  "preferGlobal": true
+  "preferGlobal": true,
+  "keywords": [
+    "websocket",
+    "memory",
+    "store",
+    "ws-memory-store",
+    "memory-store",
+    "key value store"
+  ]
 }
