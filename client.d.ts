@@ -3,7 +3,6 @@ declare class WsMemoryStoreClient {
     lastResponses: {
         [key: string]: string;
     };
-    static instance: WsMemoryStoreClient;
     connect({ host, port, http2 }?: {
         host?: string;
         port?: number;
@@ -15,7 +14,6 @@ declare class WsMemoryStoreClient {
     delete(key: string): Promise<string>;
     private waitForResponse;
     private listeners;
-    static getInstance(): WsMemoryStoreClient;
 }
 export declare const WsMemoryStore: WsMemoryStoreClient;
 export {};

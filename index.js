@@ -6,25 +6,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const socket_io_1 = require("socket.io");
 const command_line_args_1 = __importDefault(require("command-line-args"));
-const optionDefinitions = [
-    {
-        name: "port",
-        alias: "p",
-        type: Number
-    },
-    {
-        name: 'command',
-        defaultOption: true,
-    }
-];
-const options = (0, command_line_args_1.default)(optionDefinitions, { stopAtFirstUnknown: true });
+const isString_1 = __importDefault(require("lodash/isString"));
+const config_1 = require("./config");
+const options = (0, command_line_args_1.default)(config_1.optionDefinitions, { stopAtFirstUnknown: true });
 if (options.command === 'serve') {
-    const io = new socket_io_1.Server({ /* options */});
+    const io = new socket_io_1.Server({});
     const memory = {};
     io.on("connection", (socket) => {
         // save message handler
         socket.on("set", ({ key, data }) => {
-            memory[key] = data;
+            if ((0, isString_1.default)(key) && (0, isString_1.default)(data)) {
+                memory[key] = data;
+            }
         });
         // get message handler
         socket.on("get", ({ key }) => {
@@ -39,8 +32,8 @@ if (options.command === 'serve') {
             delete memory[key];
         });
     });
-    io.listen(options.port || 22922);
-    console.log(`WS Memory Store started and listening on port ${options.port || 22922}`);
+    io.listen(options.port || config_1.DEFAULT_PORT);
+    console.log(`WS Memory Store started and listening on port ${options.port || config_1.DEFAULT_PORT}`);
 }
 if (options.command === 'help') {
     console.log(`
@@ -51,10 +44,10 @@ if (options.command === 'help') {
             - command [serve] - Starts the websocket memory store server.
             - help            - Displays this help message.
         Flags:
-            - port [number]   - Specifies the port to listen on. Default is 22922.
+            - port [number]   - Specifies the port to listen on. Default is ${config_1.DEFAULT_PORT}.
 
         Example:
-            $ ws-memory-store serve -p 22922
+            $ ws-memory-store serve -p ${config_1.DEFAULT_PORT}
     `);
     process.exit(0);
 }

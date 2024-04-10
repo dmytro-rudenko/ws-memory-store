@@ -1,15 +1,16 @@
 import { io } from "socket.io-client";
+import { DEFAULT_PORT } from "./config";
+import { KeyValue } from "./interfaces";
 
 class WsMemoryStoreClient {
     socket: any
     lastResponses: {
         [key: string]: string 
     } = {}
-    static instance: WsMemoryStoreClient;
 
     public async connect({
         host = 'localhost',
-        port = 22922,
+        port = DEFAULT_PORT,
         http2 = false
     }: {
         host?: string,
@@ -20,13 +21,13 @@ class WsMemoryStoreClient {
 
         const res = await new Promise((resolve) => {
             this.socket.on("connect", () => {
-                this.listeners();
                 resolve('connected');
-                console.log("connected");
             })
         })
 
         this.socket.removeAllListeners('connect');
+
+        this.listeners();
 
         return res
     }
@@ -49,7 +50,7 @@ class WsMemoryStoreClient {
             key
         });
 
-        return await this.waitForResponse(key)
+        return this.waitForResponse(key)
     }
 
     public async delete (key: string) {
@@ -62,32 +63,28 @@ class WsMemoryStoreClient {
 
     private async waitForResponse(key: string) {
         return new Promise((resolve) => {
-            setInterval(() => {
+            const interval = setInterval(() => {
                 if (this.lastResponses[key]) {
-                    resolve(this.lastResponses[key]);
+                    const data = this.lastResponses[key]
+
                     delete this.lastResponses[key];
+
+                    clearInterval(interval);
+                    resolve(data);
                 }
             })
         })
     }
 
     private listeners() {
-        this.socket.on("get", ({ key, data }: { key: string, data: string }) => {
-            // console.log("listener get", key, data);
+        this.socket.on("get", ({ key, data }: KeyValue) => {
             this.lastResponses[key] = data
         })
 
         this.socket.on("disconnect", () => {
-            console.log("disconnected");
+            // console.log("disconnected");
         })
-    }
-
-    static getInstance() {
-        if (!this.instance) {
-            this.instance = new WsMemoryStoreClient();
-        }
-        return this.instance
     }
 }
 
-export const WsMemoryStore = WsMemoryStoreClient.getInstance()
+export const WsMemoryStore = new WsMemoryStoreClient()

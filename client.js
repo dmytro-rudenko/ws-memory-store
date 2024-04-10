@@ -2,20 +2,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WsMemoryStore = void 0;
 const socket_io_client_1 = require("socket.io-client");
+const config_1 = require("./config");
 class WsMemoryStoreClient {
     constructor() {
         this.lastResponses = {};
     }
-    async connect({ host = 'localhost', port = 22922, http2 = false } = {}) {
+    async connect({ host = 'localhost', port = config_1.DEFAULT_PORT, http2 = false } = {}) {
         this.socket = (0, socket_io_client_1.io)(`${http2 ? 'https' : 'http'}://${host}:${port}`);
         const res = await new Promise((resolve) => {
             this.socket.on("connect", () => {
-                this.listeners();
                 resolve('connected');
-                console.log("connected");
             });
         });
         this.socket.removeAllListeners('connect');
+        this.listeners();
         return res;
     }
     disconnect() {
@@ -32,7 +32,7 @@ class WsMemoryStoreClient {
         this.socket.emit("get", {
             key
         });
-        return await this.waitForResponse(key);
+        return this.waitForResponse(key);
     }
     async delete(key) {
         this.socket.emit("delete", {
@@ -42,28 +42,23 @@ class WsMemoryStoreClient {
     }
     async waitForResponse(key) {
         return new Promise((resolve) => {
-            setInterval(() => {
+            const interval = setInterval(() => {
                 if (this.lastResponses[key]) {
-                    resolve(this.lastResponses[key]);
+                    const data = this.lastResponses[key];
                     delete this.lastResponses[key];
+                    clearInterval(interval);
+                    resolve(data);
                 }
             });
         });
     }
     listeners() {
         this.socket.on("get", ({ key, data }) => {
-            // console.log("listener get", key, data);
             this.lastResponses[key] = data;
         });
         this.socket.on("disconnect", () => {
-            console.log("disconnected");
+            // console.log("disconnected");
         });
     }
-    static getInstance() {
-        if (!this.instance) {
-            this.instance = new WsMemoryStoreClient();
-        }
-        return this.instance;
-    }
 }
-exports.WsMemoryStore = WsMemoryStoreClient.getInstance();
+exports.WsMemoryStore = new WsMemoryStoreClient();

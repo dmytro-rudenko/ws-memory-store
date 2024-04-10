@@ -2,23 +2,14 @@
 
 import { Server } from "socket.io";
 import commandLineArgs from "command-line-args";
-
-const optionDefinitions = [
-    {
-        name: "port",
-        alias: "p",
-        type: Number
-    },
-    {
-        name: 'command',
-        defaultOption: true,
-    }
-]
+import isString from "lodash/isString";
+import { DEFAULT_PORT, optionDefinitions } from "./config";
+import { KeyValue } from "./interfaces";
 
 const options = commandLineArgs(optionDefinitions, { stopAtFirstUnknown: true });
 
 if (options.command === 'serve') {
-    const io = new Server({ /* options */ });
+    const io = new Server({});
     const memory: { [key: string]: string } = {};
 
     io.on("connection", (socket) => {
@@ -26,11 +17,10 @@ if (options.command === 'serve') {
         socket.on("set", ({
             key,
             data
-        }: {
-            key: string,
-            data: string
-        }) => {
-            memory[key] = data;
+        }: KeyValue) => {
+            if (isString(key) && isString(data)) {
+                memory[key] = data;
+            }
         })
 
         // get message handler
@@ -49,9 +39,9 @@ if (options.command === 'serve') {
         })
     });
 
-    io.listen(options.port || 22922);
+    io.listen(options.port || DEFAULT_PORT);
 
-    console.log(`WS Memory Store started and listening on port ${options.port || 22922}`)
+    console.log(`WS Memory Store started and listening on port ${options.port || DEFAULT_PORT}`);
 }
 
 if (options.command === 'help') {
@@ -63,10 +53,10 @@ if (options.command === 'help') {
             - command [serve] - Starts the websocket memory store server.
             - help            - Displays this help message.
         Flags:
-            - port [number]   - Specifies the port to listen on. Default is 22922.
+            - port [number]   - Specifies the port to listen on. Default is ${DEFAULT_PORT}.
 
         Example:
-            $ ws-memory-store serve -p 22922
+            $ ws-memory-store serve -p ${DEFAULT_PORT}
     `);
     process.exit(0);
 }
