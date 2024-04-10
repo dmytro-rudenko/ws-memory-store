@@ -1,7 +1,7 @@
 {
   "name": "ws-memory-store",
   "description": "Memory store based on WebSockets",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "index.js",
   "bin": {
     "ws-memory-store": "./index.js"
