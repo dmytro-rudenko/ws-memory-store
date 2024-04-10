@@ -1,0 +1,22 @@
+{
+  "name": "ws-memory-store",
+  "version": "0.0.1",
+  "main": "index.js",
+  "bin": {
+    "ws-memory-store": "./index.js"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts"
+  },
+  "devDependencies": {
+    "express": "^4.19.2",
+    "typescript": "^5.4.4"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.7.5"
+  },
+  "preferGlobal": true
+}
