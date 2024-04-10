@@ -28,5 +28,12 @@
     "ws-memory-store",
     "memory-store",
     "key value store"
-  ]
+  ],
+
+  "author": "https://github.com/dmytro-rudenko",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dmytro-rudenko/ws-memory-store.git"
+  },
+  "homepage": "https://github.com/dmytro-rudenko/ws-memory-store#readme"
 }
